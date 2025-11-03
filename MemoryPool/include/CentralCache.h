@@ -19,7 +19,7 @@ public:
 	//Use singlton pattern
 	static CentralCache& getInstance();
 	void* fetchToThreadCache(size_t);
-	void reciveFromThreadCache(void* ptr, size_t);
+	void receiveFromThreadCache(void* ptr, size_t numReturn, size_t index);
 
 private:
 	CentralCache();

@@ -21,7 +21,7 @@ void* CentralCache::returnToPageCache(void* ptr, size_t size) {
 	return nullptr;
 }
 
-void CentralCache::reciveFromThreadCache(void* ptr, size_t size) {
+void CentralCache::receiveFromThreadCache(void* ptr, size_t numReturn, size_t index) {
 	// stub
 }
 

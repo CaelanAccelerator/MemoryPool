@@ -16,3 +16,7 @@ void* PageCache::allocateSpan() {
 void PageCache::deallpcateSpan() {
 	//stub
 }
+
+void* PageCache::systemAlloc(size_t numPages) {
+
+}
