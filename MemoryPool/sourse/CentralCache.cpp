@@ -24,3 +24,11 @@ void* CentralCache::returnToPageCache(void* ptr, size_t size) {
 void CentralCache::reciveFromThreadCache(void* ptr, size_t size) {
 	// stub
 }
+
+bool CentralCache::shouldReturn(size_t index, size_t currentCount, std::chrono::steady_clock::time_point currentTIme) {
+	//stub
+}
+
+void CentralCache::peformDelayReturn() {
+	//stub
+}

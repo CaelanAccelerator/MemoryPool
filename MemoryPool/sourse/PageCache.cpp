@@ -8,11 +8,11 @@ PageCache::~PageCache() {
 	//stub
 }
 
-void* PageCache::fetch() {
+void* PageCache::allocateSpan() {
 	//stub
 	return nullptr;
 }
 
-void PageCache::recive() {
+void PageCache::deallpcateSpan() {
 	//stub
 }
