@@ -1,5 +1,4 @@
-// mp_tests.cpp — tests adapted for your API
-#include "../include/ThreadCache.h"   // ??????????
+#include "../include/ThreadCache.h"   
 #include <iostream>
 #include <vector>
 #include <thread>
@@ -10,7 +9,7 @@
 #include <atomic>
 #include <cstdint>
 
-// Convenience wrappers to make test code clearer.// Convenience wrappers to make test code clearer.// Convenience wrappers to make test code clearer.// Convenience wrappers to make test code clearer.// Convenience wrappers to make test code clearer.// Convenience wrappers to make test code clearer.// Convenience wrappers to make test code clearer.// Convenience wrappers to make test code clearer.// Convenience wrappers to make test code clearer.
+
 static inline void* MP_allocate(size_t size) {
     return ThreadCache::getInstance().allocate(size);
 }
@@ -22,17 +21,14 @@ static inline void MP_deallocate(void* p, size_t size) {
 void testBasicAllocation() {
     std::cout << "Running basic allocation test..." << std::endl;
 
-    // ??
     void* ptr1 = MP_allocate(8);
     assert(ptr1 != nullptr);
     MP_deallocate(ptr1, 8);
 
-    // ??
     void* ptr2 = MP_allocate(1024);
     assert(ptr2 != nullptr);
     MP_deallocate(ptr2, 1024);
 
-    // ????? thread cache ?“?? MAX_SIZE ? ?????”???
     const size_t big = 1024 * 1024;
     void* ptr3 = MP_allocate(big);
     assert(ptr3 != nullptr);
@@ -68,11 +64,11 @@ void testMultiThreading() {
             allocations.reserve(ALLOCS_PER_THREAD);
 
             std::mt19937 rng(std::random_device{}());
-            std::uniform_int_distribution<int> smallK(1, 256);  // 1..256 ? *8
+            std::uniform_int_distribution<int> smallK(1, 256);  
             std::bernoulli_distribution coin(0.5);
 
             for (int i = 0; i < ALLOCS_PER_THREAD && !has_error.load(); ++i) {
-                size_t sz = static_cast<size_t>(smallK(rng)) * 8; // ??? size-class ??
+                size_t sz = static_cast<size_t>(smallK(rng)) * 8; 
                 void* ptr = MP_allocate(sz);
                 if (!ptr) { has_error = true; break; }
                 allocations.push_back({ ptr, sz });
@@ -102,26 +98,19 @@ void testMultiThreading() {
 void testEdgeCases() {
     std::cout << "Running edge cases test..." << std::endl;
 
-    // 0 ?????????? nullptr ? ???????????
     void* p0 = MP_allocate(0);
     if (p0) MP_deallocate(p0, 0);
 
-    // ??????? size-class ? 8 ???
     void* p1 = MP_allocate(1);
-    // ?? allocate(1) ???? 8?? nullptr ???????? nullptr ???
     if (p1) {
-        // ?????? 8 ???
         assert((reinterpret_cast<uintptr_t>(p1) & (8 - 1)) == 0);
         MP_deallocate(p1, 1);
     }
 
-    // ????????? MAX_SIZE ???????????????????
-    // ????? Size.h ???????????? MAX_SIZE?
-    const size_t nearMaxSmall = 256 * 1024; // ???????????
+    const size_t nearMaxSmall = 256 * 1024;
     void* p2 = MP_allocate(nearMaxSmall);
     if (p2) MP_deallocate(p2, nearMaxSmall);
 
-    // ?????????????
     const size_t overMaxSmall = 1024 * 1024;
     void* p3 = MP_allocate(overMaxSmall);
     assert(p3 != nullptr);
@@ -138,7 +127,7 @@ void testStress() {
     allocations.reserve(NUM_ITER);
 
     std::mt19937 rng(std::random_device{}());
-    std::uniform_int_distribution<int> smallK(1, 1024); // 1..1024 ? *8
+    std::uniform_int_distribution<int> smallK(1, 1024); 
 
     for (int i = 0; i < NUM_ITER; ++i) {
         size_t sz = static_cast<size_t>(smallK(rng)) * 8;

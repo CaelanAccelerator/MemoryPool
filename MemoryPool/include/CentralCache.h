@@ -10,7 +10,6 @@ struct SpanTracker
 	std::atomic<void*> spanAddr{ nullptr };
 	std::atomic<size_t> numPages{ 0 };
 	std::atomic<size_t> blockCount{ 0 };
-	std::atomic<size_t>freeCount{ 0 };
 };
 
 class CentralCache
@@ -25,7 +24,7 @@ public:
 private:
 	CentralCache();
 	void* fetchFromPageCache(size_t);
-	void returnSpan(SpanTracker*, size_t index);
+	void returnSpan(SpanTracker*, size_t newFreeBlocks, size_t index);
 
 	//Central Free List and locks
 	std::array<std::atomic<void*>, Size::FREE_LIST_SIZE> freeList_;

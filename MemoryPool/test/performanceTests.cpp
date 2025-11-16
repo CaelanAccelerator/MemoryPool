@@ -65,7 +65,7 @@ public:
     // 2. Small object allocation test
     static void testSmallAllocation()
     {
-        constexpr size_t NUM_ALLOCS = 100000;
+        constexpr size_t NUM_ALLOCS = 500000;
         // Fixed set of small sizes optimized by the pool
         const size_t SIZES[] = { 8, 16, 32, 64, 128, 256 };
         const size_t NUM_SIZES = sizeof(SIZES) / sizeof(SIZES[0]);
@@ -163,7 +163,7 @@ public:
     static void testMultiThreaded()
     {
         constexpr size_t NUM_THREADS = 10;
-        constexpr size_t ALLOCS_PER_THREAD = 10000;
+        constexpr size_t ALLOCS_PER_THREAD = 100000;
 
         std::cout << "\nTesting multi-threaded allocations (" << NUM_THREADS
             << " threads, " << ALLOCS_PER_THREAD << " allocations each):"
@@ -311,7 +311,7 @@ public:
     // 4. Mixed size test
     static void testMixedSizes()
     {
-        constexpr size_t NUM_ALLOCS = 10000;
+        constexpr size_t NUM_ALLOCS = 500000;
         // Categorize sizes per allocator design:
         // 1. Small: suited for ThreadCache
         // 2. Medium: suited for CentralCache
@@ -477,8 +477,8 @@ int main()
 
     
     PerformanceTest::testSmallAllocation();
-    /*PerformanceTest::testMultiThreaded();
-    PerformanceTest::testMixedSizes();*/
+    PerformanceTest::testMultiThreaded();
+    PerformanceTest::testMixedSizes();
 
     return 0;
 }
