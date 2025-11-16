@@ -3,7 +3,8 @@
 #include<atomic>
 #include<array>
 #include<chrono>
-#define FREE_LIST_SIZE 1024
+#include <vector>
+#include"Size.h"
 struct SpanTracker
 {
 	std::atomic<void*> spanAddr{ nullptr };
@@ -24,31 +25,28 @@ public:
 private:
 	CentralCache();
 	void* fetchFromPageCache(size_t);
-	void* returnToPageCache(void* ptr, size_t);
+	void returnSpan(SpanTracker*, size_t index);
 
 	//Central Free List and locks
-	std::array<void*, FREE_LIST_SIZE> freeList_;
-	std::array<std::atomic_flag, FREE_LIST_SIZE> locks_;
+	std::array<std::atomic<void*>, Size::FREE_LIST_SIZE> freeList_;
+	std::array<std::atomic_flag, Size::FREE_LIST_SIZE> locks_;
 
 	//use array to store span info to reduce the cost by map
-	std::array<SpanTracker, 1024> spanTrackers_;
+	std::array<SpanTracker, Size::FREE_LIST_SIZE> spanTrackers_;
 	std::atomic<size_t> spanCount{ 0 };
 
 	//Counters for return decisions
 	static const size_t MAX_DELAY_COUNT{ 48 };
-	std::array<std::atomic<size_t>, FREE_LIST_SIZE> delayCounts_;
+	std::array<std::atomic<size_t>, Size::FREE_LIST_SIZE> delayCounts_;
 	static const std::chrono::milliseconds MAX_DELAY_DURATION;
-	std::array<std::chrono::steady_clock::time_point, FREE_LIST_SIZE> latestReturnTimes_;
+	std::array<std::chrono::steady_clock::time_point, Size::FREE_LIST_SIZE> latestReturnTimes_;
 
 	bool shouldReturn(size_t index, size_t currentCount, std::chrono::steady_clock::time_point currentTIme);
-	void peformDelayReturn();
-	/*std::array<short,>*/
+	void performDelayReturn(size_t index);
+	SpanTracker* getSpanTracker(void* blockAddr);
+	void recycleSpanSlot(SpanTracker& tracker);
+	size_t PageToCentralStrategy(size_t index);
+	size_t CentralToThreadStrategy(size_t index);
 };
 
-CentralCache::CentralCache()
-{
-}
 
-CentralCache::~CentralCache()
-{
-}

@@ -1,7 +1,7 @@
 #include "../include/ThreadCache.h"
 #include "../include/CentralCache.h"
 
-ThreadCache& ThreadCache::getinstance() {
+ThreadCache& ThreadCache::getInstance() {
 	static thread_local ThreadCache instance;
 	return instance;
 }
@@ -11,7 +11,7 @@ void* ThreadCache::allocate(size_t size) {
 	if (size == 0) return nullptr;
 	if (size > MAX_SIZE) return malloc(size);
 	// FreeList is not empty:
-	size_t index = size / 8;
+	size_t index = (size - 1) / 8;
 	if (freeList_[index]) {
 		void* ptr = freeList_[index];
 		freeList_[index] = *reinterpret_cast<void**>(freeList_[index]);
@@ -31,7 +31,7 @@ void ThreadCache::deallocate(void* ptr, size_t size) {
 		return;
 	}
 
-	size_t index = size / 8;
+	size_t index = (size - 1) / 8;
 	*reinterpret_cast<void**>(ptr) = freeList_[index];
 	freeList_[index] = ptr;
 	++freeListSize_[index];
@@ -43,12 +43,13 @@ void* ThreadCache::fetchFromCentralCache(size_t index) {
 	void* ptr = CentralCache::getInstance().fetchToThreadCache(index);
 	if (!ptr) return nullptr;
 	
-	// return the result to user, put the rest into freeList_
+	// Save the first node to return to user
 	void* result = ptr;
+	// Move ptr to the next node for freeList
 	ptr = *reinterpret_cast<void**>(ptr);
 	freeList_[index] = ptr;
 
-	//update the freeListSize
+	// Update the freeListSize
 	size_t batchNum{ 0 };
 	while (ptr)
 	{
@@ -60,7 +61,9 @@ void* ThreadCache::fetchFromCentralCache(size_t index) {
 }
 
 void ThreadCache::returnToCentralCache(void* ptr, size_t size) {
-	size_t index = size / 8;
+	if (!ptr) return;
+
+	size_t index = (size - 1) / 8;
 	
 	size_t numBatch = freeListSize_[index];
 	if (numBatch == 1) return;
@@ -72,14 +75,16 @@ void ThreadCache::returnToCentralCache(void* ptr, size_t size) {
 		ptr = *reinterpret_cast<void**>(ptr);
 	}
 
-	freeListSize_[index] = numKeep;
-	void* nodeReturn = *reinterpret_cast<void**>(ptr);
-	*reinterpret_cast<void**>(ptr) = nullptr;
-
-	CentralCache::getInstance().receiveFromThreadCache(nodeReturn, numReturn, index);
+	if (ptr)
+	{
+		freeListSize_[index] = numKeep;
+		void* nodeReturn = *reinterpret_cast<void**>(ptr);
+		*reinterpret_cast<void**>(ptr) = nullptr;
+		CentralCache::getInstance().receiveFromThreadCache(nodeReturn, numReturn, index);
+	}	
 }
 
 bool ThreadCache::shouldReturn(size_t index) {
-	size_t threshold = 256;
+	size_t threshold = 100000;
 	return freeListSize_[index] > threshold;
 }

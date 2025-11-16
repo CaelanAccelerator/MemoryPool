@@ -11,8 +11,8 @@ public:
 		static PageCache instance;
 		return instance;
 	}
-	void* allocateSpan();
-	void deallpcateSpan();
+	void* allocateSpan(size_t numPages);
+	void deallocateSpan(void* spanAddr, size_t numPages);
 private:
 	PageCache() = default;
 	struct Span
@@ -21,9 +21,8 @@ private:
 		size_t numPages;
 		Span* next;
 	};
-	static const size_t PAGE_SIZE{ 4096 };
 	void* systemAlloc(size_t numPages);
-	std::map<size_t, Span> freeSpans_;
-	std::map<void*, Span> spanMap_; // a mapping from address to Span, used for recycle
+	std::map<size_t, Span*> freeSpans_;
+	std::map<void*, Span*> spanMap_; // a mapping from address to Span, used for recycle
 	std::mutex mutexLock;
 };
