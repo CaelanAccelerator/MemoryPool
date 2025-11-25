@@ -9,7 +9,7 @@ ThreadCache& ThreadCache::getInstance() {
 void* ThreadCache::allocate(size_t size) {
 	// Boundary Cases:
 	if (size == 0) return nullptr;
-	if (size > MAX_SIZE) return malloc(size);
+	if (size > Size::MAX_ALLOC_SIZE) return malloc(size);
 	// FreeList is not empty:
 	size_t index = (size - 1) / 8;
 	if (freeList_[index]) {
@@ -25,7 +25,7 @@ void* ThreadCache::allocate(size_t size) {
 void ThreadCache::deallocate(void* ptr, size_t size) {
 	// Boundary Cases:
 	if (size == 0 || ptr == nullptr) return;
-	if (size > MAX_SIZE)
+	if (size > Size::MAX_ALLOC_SIZE)
 	{
 		free(ptr);
 		return;

@@ -13,8 +13,6 @@ public:
 	void deallocate(void* ptr, size_t);
 
 private:
-
-	static const size_t MAX_SIZE{ 512 };
 	ThreadCache()
 	{
 		freeList_.fill(nullptr);

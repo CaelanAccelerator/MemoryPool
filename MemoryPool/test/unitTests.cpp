@@ -25,9 +25,9 @@ void testBasicAllocation() {
     assert(ptr1 != nullptr);
     MP_deallocate(ptr1, 8);
 
-    void* ptr2 = MP_allocate(1024);
+    void* ptr2 = MP_allocate(256);
     assert(ptr2 != nullptr);
-    MP_deallocate(ptr2, 1024);
+    MP_deallocate(ptr2, 256);
 
     const size_t big = 1024 * 1024;
     void* ptr3 = MP_allocate(big);
@@ -40,7 +40,7 @@ void testBasicAllocation() {
 void testMemoryWriting() {
     std::cout << "Running memory writing test..." << std::endl;
 
-    const size_t size = 128;
+    const size_t size = 100000;
     char* p = static_cast<char*>(MP_allocate(size));
     assert(p != nullptr);
 
@@ -107,11 +107,11 @@ void testEdgeCases() {
         MP_deallocate(p1, 1);
     }
 
-    const size_t nearMaxSmall = 256 * 1024;
+    const size_t nearMaxSmall = Size::MAX_ALLOC_SIZE;
     void* p2 = MP_allocate(nearMaxSmall);
     if (p2) MP_deallocate(p2, nearMaxSmall);
 
-    const size_t overMaxSmall = 1024 * 1024;
+    const size_t overMaxSmall = 2 * Size::MAX_ALLOC_SIZE;
     void* p3 = MP_allocate(overMaxSmall);
     assert(p3 != nullptr);
     MP_deallocate(p3, overMaxSmall);
@@ -127,7 +127,7 @@ void testStress() {
     allocations.reserve(NUM_ITER);
 
     std::mt19937 rng(std::random_device{}());
-    std::uniform_int_distribution<int> smallK(1, 1024); 
+    std::uniform_int_distribution<int> smallK(1, 256); 
 
     for (int i = 0; i < NUM_ITER; ++i) {
         size_t sz = static_cast<size_t>(smallK(rng)) * 8;

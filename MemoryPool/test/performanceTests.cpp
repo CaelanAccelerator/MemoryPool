@@ -47,7 +47,7 @@ public:
         // Warmup MemoryPool
         for (int i = 0; i < 1000; ++i)
         {
-            for (size_t size : {8, 16, 32, 64, 128, 256, 512, 1024}) {
+            for (size_t size : {8, 16, 32, 64, 128, 256, 512}) {
                 void* p = MemoryPool::allocate(size);
                 warmupPtrs.emplace_back(p, size);  // store pointer and size
             }
@@ -237,7 +237,6 @@ public:
                             pressurePtrs.push_back({ ptr, size });
                         }
 
-                        // 立即释放这些内存，测试内存池的回收效率
                         for (const auto& [ptr, size] : pressurePtrs)
                         {
                             if (useMemPool)
@@ -358,7 +357,6 @@ public:
                 }
 
                 void* ptr = MemoryPool::allocate(size);
-                // 计算在sizePtrs中的索引
                 size_t ptrIndex = (category < 60) ? (i / 60) % NUM_SMALL :
                     (category < 90) ? NUM_SMALL + (i / 30) % NUM_MEDIUM :
                     NUM_SMALL + NUM_MEDIUM + (i / 10) % NUM_LARGE;
@@ -367,7 +365,6 @@ public:
                 // Periodic random frees
                 if (i % 50 == 0)
                 {
-                    // 随机选择一个大小类别进行批量释放
                     size_t releaseIndex = rand() % sizePtrs.size();
                     auto& ptrs = sizePtrs[releaseIndex];
 
