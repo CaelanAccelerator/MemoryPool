@@ -162,82 +162,99 @@ public:
     // 3. Multi-threaded test
     static void testMultiThreaded()
     {
-        constexpr size_t NUM_THREADS = 10;
+        constexpr size_t NUM_THREADS = 8;
         constexpr size_t ALLOCS_PER_THREAD = 100000;
 
         std::cout << "\nTesting multi-threaded allocations (" << NUM_THREADS
             << " threads, " << ALLOCS_PER_THREAD << " allocations each):"
             << std::endl;
 
-        auto threadFunc = [](bool useMemPool)
-            {
-                std::random_device rd;
-                std::mt19937 gen(rd());
-
-                // Fixed size set to better test reuse
-                const size_t SIZES[] = { 8, 16, 32, 64, 128, 256 };
-                const size_t NUM_SIZES = sizeof(SIZES) / sizeof(SIZES[0]);
-
-                // Per-thread lists grouped by size
-                std::array<std::vector<std::pair<void*, size_t>>, NUM_SIZES> sizePtrs;
-                for (auto& ptrs : sizePtrs) {
-                    ptrs.reserve(ALLOCS_PER_THREAD / NUM_SIZES);
-                }
-
-                // Simulate allocation pattern
-                for (size_t i = 0; i < ALLOCS_PER_THREAD; ++i)
+            auto threadFunc = [](bool useMemPool)
                 {
-                    // 1. Allocation phase (prefer ThreadCache)
-                    size_t sizeIndex = i % NUM_SIZES;
-                    size_t size = SIZES[sizeIndex];
-                    void* ptr = useMemPool ? MemoryPool::allocate(size)
-                        : new char[size];
-                    sizePtrs[sizeIndex].push_back({ ptr, size });
+                    std::random_device rd;
+                    std::mt19937 gen(rd());
 
-                    // 2. Reuse phase
-                    if (i % 100 == 0)
+                    // Fixed size set to better test reuse
+                    const size_t SIZES[] = { 8, 16, 32, 64, 128, 256 };
+                    const size_t NUM_SIZES = sizeof(SIZES) / sizeof(SIZES[0]);
+
+                    // Per-thread lists grouped by size
+                    std::array<std::vector<std::pair<void*, size_t>>, NUM_SIZES> sizePtrs;
+                    for (auto& ptrs : sizePtrs) {
+                        ptrs.reserve(ALLOCS_PER_THREAD / NUM_SIZES);
+                    }
+
+                    // Simulate allocation pattern
+                    for (size_t i = 0; i < ALLOCS_PER_THREAD; ++i)
                     {
-                        // Random batch free from a size class
-                        size_t releaseIndex = rand() % NUM_SIZES;
-                        auto& ptrs = sizePtrs[releaseIndex];
+                        // 1. Allocation phase (prefer ThreadCache)
+                        size_t sizeIndex = i % NUM_SIZES;
+                        size_t size = SIZES[sizeIndex];
+                        void* ptr = useMemPool ? MemoryPool::allocate(size)
+                            : new char[size];
+                        sizePtrs[sizeIndex].push_back({ ptr, size });
 
-                        if (!ptrs.empty())
+                        // 2. Reuse phase
+                        if (i % 100 == 0)
                         {
-                            // Free 20%-30% of blocks of that size
-                            size_t releaseCount = ptrs.size() * (20 + (rand() % 11)) / 100;
-                            releaseCount = std::min(releaseCount, ptrs.size());
+                            // Random batch free from a size class
+                            size_t releaseIndex = rand() % NUM_SIZES;
+                            auto& ptrs = sizePtrs[releaseIndex];
 
-                            for (size_t j = 0; j < releaseCount; ++j)
+                            if (!ptrs.empty())
                             {
-                                size_t index = rand() % ptrs.size();
+                                // Free 20%-30% of blocks of that size
+                                size_t releaseCount = ptrs.size() * (20 + (rand() % 11)) / 100;
+                                releaseCount = std::min(releaseCount, ptrs.size());
+
+                                for (size_t j = 0; j < releaseCount; ++j)
+                                {
+                                    size_t index = rand() % ptrs.size();
+                                    if (useMemPool)
+                                    {
+                                        MemoryPool::deallocate(ptrs[index].first, ptrs[index].second);
+                                    }
+                                    else
+                                    {
+                                        delete[] static_cast<char*>(ptrs[index].first);
+                                    }
+                                    ptrs[index] = ptrs.back();
+                                    ptrs.pop_back();
+                                }
+                            }
+                        }
+
+                        // 3. Pressure phase: stress CentralCache contention
+                        if (i % 1000 == 0)
+                        {
+                            // Burst allocate then immediately free
+                            std::vector<std::pair<void*, size_t>> pressurePtrs;
+                            for (int j = 0; j < 50; ++j)
+                            {
+                                size_t size = SIZES[rand() % NUM_SIZES];
+                                void* ptr = useMemPool ? MemoryPool::allocate(size)
+                                    : new char[size];
+                                pressurePtrs.push_back({ ptr, size });
+                            }
+
+                            for (const auto& [ptr, size] : pressurePtrs)
+                            {
                                 if (useMemPool)
                                 {
-                                    MemoryPool::deallocate(ptrs[index].first, ptrs[index].second);
+                                    MemoryPool::deallocate(ptr, size);
                                 }
                                 else
                                 {
-                                    delete[] static_cast<char*>(ptrs[index].first);
+                                    delete[] static_cast<char*>(ptr);
                                 }
-                                ptrs[index] = ptrs.back();
-                                ptrs.pop_back();
                             }
                         }
                     }
 
-                    // 3. Pressure phase: stress CentralCache contention
-                    if (i % 1000 == 0)
+                    // Cleanup remaining
+                    for (auto& ptrs : sizePtrs)
                     {
-                        // Burst allocate then immediately free
-                        std::vector<std::pair<void*, size_t>> pressurePtrs;
-                        for (int j = 0; j < 50; ++j)
-                        {
-                            size_t size = SIZES[rand() % NUM_SIZES];
-                            void* ptr = useMemPool ? MemoryPool::allocate(size)
-                                : new char[size];
-                            pressurePtrs.push_back({ ptr, size });
-                        }
-
-                        for (const auto& [ptr, size] : pressurePtrs)
+                        for (const auto& [ptr, size] : ptrs)
                         {
                             if (useMemPool)
                             {
@@ -249,24 +266,7 @@ public:
                             }
                         }
                     }
-                }
-
-                // Cleanup remaining
-                for (auto& ptrs : sizePtrs)
-                {
-                    for (const auto& [ptr, size] : ptrs)
-                    {
-                        if (useMemPool)
-                        {
-                            MemoryPool::deallocate(ptr, size);
-                        }
-                        else
-                        {
-                            delete[] static_cast<char*>(ptr);
-                        }
-                    }
-                }
-            };
+                };
 
         // MemoryPool test
         {
@@ -472,7 +472,7 @@ int main()
     
     PerformanceTest::warmup();
 
-    
+
     PerformanceTest::testSmallAllocation();
     PerformanceTest::testMultiThreaded();
     PerformanceTest::testMixedSizes();
