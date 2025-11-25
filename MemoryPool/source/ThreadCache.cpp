@@ -1,5 +1,7 @@
 #include "../include/ThreadCache.h"
 #include "../include/CentralCache.h"
+#include <cstddef>
+using std::size_t;
 
 ThreadCache& ThreadCache::getInstance() {
 	static thread_local ThreadCache instance;

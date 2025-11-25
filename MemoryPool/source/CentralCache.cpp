@@ -3,6 +3,8 @@
 #include <PageCache.h>
 #include <unordered_map>
 #include "Size.h"
+#include <cstddef>
+using std::size_t;
 
 const std::chrono::milliseconds CentralCache::MAX_DELAY_DURATION{ 1000 };
 

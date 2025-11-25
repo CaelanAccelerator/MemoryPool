@@ -5,6 +5,8 @@
 #include<chrono>
 #include <vector>
 #include"Size.h"
+#include <cstddef>
+using std::size_t;
 struct SpanTracker
 {
 	std::atomic<void*> spanAddr{ nullptr };

@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <atomic>
 #include <cstdint>
+#include <cstddef>
+using std::size_t;
 
 
 static inline void* MP_allocate(size_t size) {

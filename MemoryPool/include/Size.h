@@ -1,4 +1,6 @@
 #pragma once
+#include <cstddef>
+using std::size_t;
 
 namespace Size {
 	constexpr size_t MAX_ALLOC_SIZE{ 512 };

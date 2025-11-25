@@ -29,20 +29,28 @@ A high-performance **C++17** memory pool with a simple 3-layer design:
 - Configuration: **x64-Release**
 - Workloads: `MemoryPool/test/performanceTests.cpp`
 
-### Sample Results (Release)
-```text
-Starting performance tests...
-Warming up memory systems...
-Warmup complete.
+## Performance Notes
+- Benchmark: `MemoryPool/test/performanceTests.cpp`
+- Results shown are **Release** builds.
 
+### Windows (x64-Release, MSVC)
+![Windows benchmark output](memorypool_benchmark.png)
+
+### Ubuntu (Release, GCC)
+![Ubuntu benchmark output](memorypool_benchmark_ubuntu.png)
+
+<details>
+<summary>Ubuntu Sample Results (Release)</summary>
+
+```text
 Testing small allocations (500000 allocations of fixed sizes):
-Memory Pool: 16.792 ms
-New/Delete: 34.123 ms
+Memory Pool: 31.621 ms
+New/Delete: 43.922 ms
 
 Testing multi-threaded allocations (8 threads, 100000 allocations each):
-Memory Pool: 13.721 ms
-New/Delete: 15.846 ms
+Memory Pool: 82.440 ms
+New/Delete: 119.479 ms
 
 Testing mixed size allocations (500000 allocations with fixed sizes):
-Memory Pool: 11.465 ms
-New/Delete: 27.311 ms
+Memory Pool: 15.601 ms
+New/Delete: 33.065 ms

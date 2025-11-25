@@ -2,6 +2,8 @@
 
 #include<array>
 #include"Size.h"
+#include <cstddef>
+using std::size_t;
 
 class ThreadCache
 {
