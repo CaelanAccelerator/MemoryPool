@@ -23,15 +23,8 @@ jobs:
       - name: Build
         run: cmake --build build
 
-      - name: Run unit tests (your self-written runner)
+      - name: Run unit tests
         run: |
-          set -e
-          BIN="$(find build -type f -name 'unitTests*' -executable | head -n 1)"
-          if [ -z "$BIN" ]; then
-            echo "ERROR: unitTests executable not found under build/"
-            echo "Here are executables I *did* find:"
-            find build -type f -executable -maxdepth 6 -print || true
-            exit 1
-          fi
-          echo "Running: $BIN"
-          "$BIN"
+            set -euxo pipefail
+            ./build/mp_tests
+      
