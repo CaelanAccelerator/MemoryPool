@@ -86,7 +86,7 @@ void ThreadCache::returnToCentralCache(void* ptr, size_t size) {
 	}	
 }
 
-bool ThreadCache::shouldReturn(size_t index) {
+inline bool ThreadCache::shouldReturn(size_t index) {
 	size_t threshold = 100000;
 	return freeListSize_[index] > threshold;
 }
