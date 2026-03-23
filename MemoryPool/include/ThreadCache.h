@@ -9,7 +9,7 @@ class ThreadCache
 {
 public:
 	
-	//Use the Singlton pattern
+	//Use the Singleton pattern
 	static ThreadCache& getInstance();
 	void* allocate(size_t);
 	void deallocate(void* ptr, size_t);
@@ -23,8 +23,8 @@ private:
 	std::array<void*, Size::FREE_LIST_SIZE> freeList_;
 	std::array<size_t, Size::FREE_LIST_SIZE> freeListSize_;
 
-	void* fetchFromCentralCache(size_t);
-	void returnToCentralCache(void* ptr, size_t);
+	void* refillFromCentral(size_t);
+	void drainToCentral(void* ptr, size_t);
 	bool shouldReturn(size_t index);
 };
 

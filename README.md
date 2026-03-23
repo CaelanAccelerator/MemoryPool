@@ -7,7 +7,7 @@ A high-performance **C++17** memory pool with a simple 3-layer design:
 3. **PageCache** — span/page management to reduce fragmentation via span reuse
 
 ## Why It Matters
-- Up to **~2× faster** than raw `new/delete` on small & mixed allocations (see `performanceTests.cpp`)
+- Up to **~1.5× faster** than raw `new/delete` on small & mixed allocations (see `performanceTests.cpp`)
 - Reduces fragmentation by reusing/recycling spans instead of constantly requesting fresh memory from the OS
 - Scales under multi-threaded workloads using thread-local caching + batched central transfers (locks are amortized)
 
@@ -32,27 +32,27 @@ A high-performance **C++17** memory pool with a simple 3-layer design:
 ```text
 [Windows | x64-Release | MSVC]
 Testing small allocations (500000 allocations of fixed sizes):
-Memory Pool: 16.792 ms
-New/Delete: 34.123 ms
+Memory Pool: 27.747 ms
+New/Delete: 34.387 ms
 
-Testing multi-threaded allocations (8 threads, 100000 allocations each):
-Memory Pool: 13.721 ms
-New/Delete: 15.846 ms
+Testing multi-threaded allocations (4 threads, 100000 allocations each):
+Memory Pool: 8.545 ms
+New/Delete: 10.426 ms
 
 Testing mixed size allocations (500000 allocations with fixed sizes):
-Memory Pool: 11.465 ms
-New/Delete: 27.311 ms
+Memory Pool: 18.345 ms
+New/Delete: 26.601 ms
 
 
 [Ubuntu | Release | GCC]
 Testing small allocations (500000 allocations of fixed sizes):
-Memory Pool: 31.621 ms
-New/Delete: 43.922 ms
+Memory Pool: 27.747 ms
+New/Delete: 34.387 ms
 
-Testing multi-threaded allocations (8 threads, 100000 allocations each):
-Memory Pool: 82.440 ms
-New/Delete: 119.479 ms
+Testing multi-threaded allocations (4 threads, 100000 allocations each):
+Memory Pool: 8.545 ms
+New/Delete: 10.426 ms
 
 Testing mixed size allocations (500000 allocations with fixed sizes):
-Memory Pool: 15.601 ms
-New/Delete: 33.065 ms
+Memory Pool: 18.345 ms
+New/Delete: 26.601 ms

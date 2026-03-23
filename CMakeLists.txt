@@ -21,16 +21,16 @@ foreach(f IN LISTS MP_SOURCES)
   endif()
 endforeach()
 
-add_library(mpool STATIC ${MP_SOURCES})
+add_library(mpool STATIC ${MP_SOURCES} "MemoryPool/include/SpinLockGuard.h")
 target_include_directories(mpool PUBLIC ${INC_DIR})
 
 if(EXISTS "${TEST_DIR}/unitTests.cpp")
-  add_executable(mp_tests ${TEST_DIR}/unitTests.cpp)
+  add_executable(mp_tests ${TEST_DIR}/unitTests.cpp "MemoryPool/include/SpinLockGuard.h")
   target_link_libraries(mp_tests PRIVATE mpool)
 endif()
 
 if(EXISTS "${TEST_DIR}/performanceTests.cpp")
-  add_executable(mp_perf ${TEST_DIR}/performanceTests.cpp)
+  add_executable(mp_perf ${TEST_DIR}/performanceTests.cpp "MemoryPool/include/SpinLockGuard.h")
   target_link_libraries(mp_perf PRIVATE mpool)
 endif()
 

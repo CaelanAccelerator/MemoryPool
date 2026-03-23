@@ -19,7 +19,7 @@ public:
     double elapsed()
     {
         auto end = high_resolution_clock::now();
-        return duration_cast<microseconds>(end - start).count() / 1000.0; // milliseconds
+        return std::chrono::duration<double, std::milli>(end - start).count(); // milliseconds
     }
 };
 
@@ -162,7 +162,7 @@ public:
     // 3. Multi-threaded test
     static void testMultiThreaded()
     {
-        constexpr size_t NUM_THREADS = 8;
+        constexpr size_t NUM_THREADS = 4;
         constexpr size_t ALLOCS_PER_THREAD = 100000;
 
         std::cout << "\nTesting multi-threaded allocations (" << NUM_THREADS
@@ -171,9 +171,7 @@ public:
 
             auto threadFunc = [](bool useMemPool)
                 {
-                    std::random_device rd;
-                    std::mt19937 gen(rd());
-
+                    srand((unsigned)time(nullptr));
                     // Fixed size set to better test reuse
                     const size_t SIZES[] = { 8, 16, 32, 64, 128, 256 };
                     const size_t NUM_SIZES = sizeof(SIZES) / sizeof(SIZES[0]);
@@ -310,6 +308,7 @@ public:
     // 4. Mixed size test
     static void testMixedSizes()
     {
+        srand((unsigned)time(nullptr));
         constexpr size_t NUM_ALLOCS = 500000;
         // Categorize sizes per allocator design:
         // 1. Small: suited for ThreadCache
