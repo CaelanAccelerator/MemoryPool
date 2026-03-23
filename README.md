@@ -45,6 +45,7 @@ New/Delete: 26.601 ms
 
 
 [Ubuntu | Release | GCC]
+[Windows | x64-Release | MSVC]
 Testing small allocations (500000 allocations of fixed sizes):
 Memory Pool: 27.747 ms
 New/Delete: 34.387 ms
@@ -56,3 +57,17 @@ New/Delete: 10.426 ms
 Testing mixed size allocations (500000 allocations with fixed sizes):
 Memory Pool: 18.345 ms
 New/Delete: 26.601 ms
+
+
+[Ubuntu | Release | GCC]
+Testing small allocations (500000 allocations of fixed sizes):
+Memory Pool: 33.833 ms
+New/Delete: 45.864 ms
+
+Testing multi-threaded allocations (4 threads, 100000 allocations each):
+Memory Pool: 28.830 ms
+New/Delete: 39.932 ms
+
+Testing mixed size allocations (500000 allocations with fixed sizes):
+Memory Pool: 20.114 ms
+New/Delete: 31.313 ms
