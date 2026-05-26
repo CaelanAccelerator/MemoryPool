@@ -19,7 +19,7 @@ void *ThreadCache::allocate(size_t size)
 
 	// Free lists are implemented as singly linked lists using LIFO
 	// (head insertion + head removal).
-	size_t index = (size - 1) / 8;
+	size_t index = Size::sizeToIndex(size);
 	if (freeListEntries_[index].head)
 	{
 		void *ptr = freeListEntries_[index].head;
@@ -44,7 +44,7 @@ void ThreadCache::deallocate(void *ptr, size_t size)
 		return;
 	}
 
-	size_t index = (size - 1) / 8;
+	size_t index = Size::sizeToIndex(size);
 	*reinterpret_cast<void **>(ptr) = freeListEntries_[index].head;
 	if (freeListEntries_[index].tail == nullptr)
 		freeListEntries_[index].tail = ptr;
@@ -91,14 +91,14 @@ void ThreadCache::drainToCentral(void *ptr, void *tail, size_t size)
 	if (!ptr)
 		return;
 
-	size_t index = (size - 1) / 8;
+	size_t index = Size::sizeToIndex(size);
 
 	size_t numBatch = freeListEntries_[index].size;
 	if (numBatch == 1)
 		return;
 
-	// keep 25% of the blocks in the thread cache, return 3/4 per term
-	size_t numKeep = std::max(numBatch / 4, size_t(1));
+	// keep 50% of the blocks in the thread cache, return 1/2
+	size_t numKeep = std::max(numBatch / 2, size_t(1));
 	size_t numReturn = numBatch - numKeep;
 	for (size_t i = 1; i < numKeep && ptr; i++)
 		ptr = *reinterpret_cast<void **>(ptr);
@@ -112,8 +112,8 @@ void ThreadCache::drainToCentral(void *ptr, void *tail, size_t size)
 
 bool ThreadCache::shouldReturn(size_t index)
 {
-	size_t blockSize = (index + 1) * Size::ALIGNMENT;
-	size_t threshold = (64 * 1024) / blockSize;
+	size_t blockSize = Size::indexToBlockSize(index);
+	size_t threshold = (512 * 1024) / blockSize;
 	threshold = std::max(threshold, size_t(16));
 	return freeListEntries_[index].size > threshold;
 }

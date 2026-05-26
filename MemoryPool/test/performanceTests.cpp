@@ -98,7 +98,7 @@ public:
 
     static void testMultiThreaded()
     {
-        constexpr size_t NUM_THREADS = 4;
+        constexpr size_t NUM_THREADS = 6;
         constexpr size_t ALLOCS_PER_THREAD = 100000;
 
         std::cout << "\nTesting multi-threaded allocations (" << NUM_THREADS

@@ -70,7 +70,7 @@ void testSmallAllocation(const char* name, Alloc alloc, Dealloc dealloc)
 template<typename Alloc, typename Dealloc>
 void testMultiThreaded(const char* name, Alloc alloc, Dealloc dealloc)
 {
-    constexpr size_t NUM_THREADS = 4;
+    constexpr size_t NUM_THREADS = 6;
     constexpr size_t ALLOCS_PER_THREAD = 100000;
 
     std::cout << "\nTesting multi-threaded allocations (" << NUM_THREADS

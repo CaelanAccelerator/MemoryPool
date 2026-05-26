@@ -56,7 +56,7 @@ void testMemoryWriting() {
 void testMultiThreading() {
     std::cout << "Running multi-threading test..." << std::endl;
 
-    const int NUM_THREADS = 4;
+    const int NUM_THREADS = 6;
     const int ALLOCS_PER_THREAD = 1000;
     std::atomic<bool> has_error{ false };
 

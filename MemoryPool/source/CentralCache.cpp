@@ -31,7 +31,7 @@ void *CentralCache::allocateBatch(size_t index)
     if (index >= Size::FREE_LIST_SIZE)
         return nullptr;
 
-    size_t size = (index + 1) * Size::ALIGNMENT;
+    size_t size = Size::indexToBlockSize(index);
     size_t numBlocks = CentralToThreadStrategy(index);
 
     SpinLockGuard lock(freeListBuckets_[index].splk);
@@ -222,7 +222,7 @@ void CentralCache::returnSpan(SpanTracker *tracker, size_t freeCount, size_t ind
 
 size_t CentralCache::CentralToThreadStrategy(size_t index)
 {
-    const size_t sz = (index + 1) * Size::ALIGNMENT;
+    const size_t sz = Size::indexToBlockSize(index);
     if (sz <= 64)
         return 160;
     if (sz <= 128)
@@ -233,12 +233,12 @@ size_t CentralCache::CentralToThreadStrategy(size_t index)
         return 32;
     if (sz <= 1024)
         return 24;
-    return 1000;
+    return 16;
 }
 
 size_t CentralCache::PageToCentralStrategy(size_t index)
 {
-    const size_t sz = (index + 1) * Size::ALIGNMENT;
+    const size_t sz = Size::indexToBlockSize(index);
     const size_t batch = CentralToThreadStrategy(index);
 
     size_t k;
