@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/bench_scaling.dir/MemoryPool/test/bench_scaling.cpp.o -o bench_scaling  libmpool.a /usr/lib/x86_64-linux-gnu/libtcmalloc.so

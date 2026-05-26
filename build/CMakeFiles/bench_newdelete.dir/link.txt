@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/bench_newdelete.dir/MemoryPool/test/bench_newdelete.cpp.o -o bench_newdelete

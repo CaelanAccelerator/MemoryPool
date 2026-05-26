@@ -1,0 +1,2 @@
+/usr/bin/ar qc libmpool_orig.a CMakeFiles/mpool_orig.dir/MemoryPool/source_orig/ThreadCache.cpp.o CMakeFiles/mpool_orig.dir/MemoryPool/source_orig/CentralCache.cpp.o CMakeFiles/mpool_orig.dir/MemoryPool/source_orig/PageCache.cpp.o
+/usr/bin/ranlib libmpool_orig.a

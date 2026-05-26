@@ -43,7 +43,7 @@ def main():
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="cmd")
     sub.required = True
-    # ... 在这里注册子命令
+    
     p_build = sub.add_parser("build")
     p_build.set_defaults(func=cmd_build)
 

@@ -56,9 +56,19 @@ in the pool rather than falling back to `malloc`.
 ### Windows baseline (MSVC, x64-Release)
 
 ```text
-Small alloc 500K:    Pool 27.7 ms  /  new/delete 34.4 ms
-Multi-threaded 4T:   Pool  8.5 ms  /  new/delete 10.4 ms
-Mixed sizes 500K:    Pool 18.3 ms  /  new/delete 26.6 ms
+
+Testing small allocations (500000 allocations of fixed sizes):
+Memory Pool: 29.884 ms
+New/Delete:  35.203 ms
+
+Testing multi-threaded allocations (6 threads, 100000 allocations each):
+Memory Pool: 10.845 ms
+New/Delete:  12.767 ms
+
+Testing mixed size allocations (500000 allocations with fixed sizes):
+Memory Pool: 13.140 ms
+New/Delete:  28.332 ms
+
 ```
 
 ## Dev Tools
