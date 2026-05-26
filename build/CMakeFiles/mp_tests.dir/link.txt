@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/mp_tests.dir/MemoryPool/test/unitTests.cpp.o -o mp_tests  libmpool.a

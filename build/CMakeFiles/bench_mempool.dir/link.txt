@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/bench_mempool.dir/MemoryPool/test/bench_mempool.cpp.o -o bench_mempool  libmpool.a

@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/bench_steady_tcmalloc.dir/MemoryPool/test/scaling/bench_steady_tcmalloc.cpp.o -o bench_steady_tcmalloc  /usr/lib/x86_64-linux-gnu/libtcmalloc.so

@@ -1,8 +1,0 @@
-/mnt/c/Users/zhouj/source/repos/MemoryPool/build/CMakeFiles/mpool.dir
-/mnt/c/Users/zhouj/source/repos/MemoryPool/build/CMakeFiles/mp_tests.dir
-/mnt/c/Users/zhouj/source/repos/MemoryPool/build/CMakeFiles/mp_perf.dir
-/mnt/c/Users/zhouj/source/repos/MemoryPool/build/CMakeFiles/bench_mempool.dir
-/mnt/c/Users/zhouj/source/repos/MemoryPool/build/CMakeFiles/bench_newdelete.dir
-/mnt/c/Users/zhouj/source/repos/MemoryPool/build/CMakeFiles/bench_tcmalloc.dir
-/mnt/c/Users/zhouj/source/repos/MemoryPool/build/CMakeFiles/edit_cache.dir
-/mnt/c/Users/zhouj/source/repos/MemoryPool/build/CMakeFiles/rebuild_cache.dir

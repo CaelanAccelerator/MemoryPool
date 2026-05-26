@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/mp_perf.dir/MemoryPool/test/performanceTests.cpp.o -o mp_perf  libmpool.a /usr/lib/x86_64-linux-gnu/libtcmalloc.so

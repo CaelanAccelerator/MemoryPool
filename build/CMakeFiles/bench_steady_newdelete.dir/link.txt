@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/bench_steady_newdelete.dir/MemoryPool/test/scaling/bench_steady_newdelete.cpp.o -o bench_steady_newdelete
