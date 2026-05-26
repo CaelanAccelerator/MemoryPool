@@ -3,32 +3,41 @@
 #include <cstddef>
 using std::size_t;
 
-ThreadCache& ThreadCache::getInstance() {
+ThreadCache &ThreadCache::getInstance()
+{
 	static thread_local ThreadCache instance;
 	return instance;
 }
 
-void* ThreadCache::allocate(size_t size) {
+void *ThreadCache::allocate(size_t size)
+{
 	// Boundary Cases:
-	if (size == 0) return nullptr;
-	if (size > Size::MAX_ALLOC_SIZE) return malloc(size);
+	if (size == 0)
+		return nullptr;
+	if (size > Size::MAX_ALLOC_SIZE)
+		return malloc(size);
 
 	// Free lists are implemented as singly linked lists using LIFO
-	// (head insertion + head removal). 
+	// (head insertion + head removal).
 	size_t index = (size - 1) / 8;
-	if (freeList_[index]) {
-		void* ptr = freeList_[index];
-		freeList_[index] = *reinterpret_cast<void**>(freeList_[index]);
-		--freeListSize_[index];
+	if (freeListEntries_[index].head)
+	{
+		void *ptr = freeListEntries_[index].head;
+		freeListEntries_[index].head = *reinterpret_cast<void **>(freeListEntries_[index].head);
+		if (freeListEntries_[index].head == nullptr)
+			freeListEntries_[index].tail = nullptr;
+		--freeListEntries_[index].size;
 		return ptr;
 	}
 	// if empty, fetch from Central Cache:
 	return refillFromCentral(index);
 }
 
-void ThreadCache::deallocate(void* ptr, size_t size) {
+void ThreadCache::deallocate(void *ptr, size_t size)
+{
 	// Boundary Cases:
-	if (size == 0 || ptr == nullptr) return;
+	if (size == 0 || ptr == nullptr)
+		return;
 	if (size > Size::MAX_ALLOC_SIZE)
 	{
 		free(ptr);
@@ -36,58 +45,75 @@ void ThreadCache::deallocate(void* ptr, size_t size) {
 	}
 
 	size_t index = (size - 1) / 8;
-	*reinterpret_cast<void**>(ptr) = freeList_[index];
-	freeList_[index] = ptr;
-	++freeListSize_[index];
+	*reinterpret_cast<void **>(ptr) = freeListEntries_[index].head;
+	if (freeListEntries_[index].tail == nullptr)
+		freeListEntries_[index].tail = ptr;
+	freeListEntries_[index].head = ptr;
+	++freeListEntries_[index].size;
 	if (shouldReturn(index))
-		drainToCentral(freeList_[index], size);
+		drainToCentral(freeListEntries_[index].head, freeListEntries_[index].tail, size);
 }
 
-void* ThreadCache::refillFromCentral(size_t index) {
-	void* ptr = CentralCache::getInstance().allocateBatch(index);
-	if (!ptr) return nullptr;
-	
+void *ThreadCache::refillFromCentral(size_t index)
+{
+	void *ptr = CentralCache::getInstance().allocateBatch(index);
+	if (!ptr)
+		return nullptr;
+
 	// Save the first node to return to user
 	// Move ptr to the next node for freeList
 	// Update the freeListSize
-	void* result = ptr;
-	ptr = *reinterpret_cast<void**>(ptr);
-	freeList_[index] = ptr;
+	void *result = ptr;
+	ptr = *reinterpret_cast<void **>(ptr);
+	if (ptr == nullptr)
+	{
+		freeListEntries_[index].tail = nullptr;
+		return result;
+	}
 
-	size_t batchNum{ 0 };
-	while (ptr)
+	freeListEntries_[index].head = ptr;
+
+	size_t batchNum{0};
+	while (*reinterpret_cast<void **>(ptr) != nullptr)
 	{
 		batchNum++;
-		ptr = *reinterpret_cast<void**>(ptr);
+		ptr = *reinterpret_cast<void **>(ptr);
 	}
-	freeListSize_[index] += batchNum;
+
+	batchNum++;
+	freeListEntries_[index].tail = ptr;
+	freeListEntries_[index].size += batchNum;
 	return result;
 }
 
-void ThreadCache::drainToCentral(void* ptr, size_t size) {
-	if (!ptr) return;
+void ThreadCache::drainToCentral(void *ptr, void *tail, size_t size)
+{
+	if (!ptr)
+		return;
 
 	size_t index = (size - 1) / 8;
 
-	size_t numBatch = freeListSize_[index];
-	if (numBatch == 1) return;
+	size_t numBatch = freeListEntries_[index].size;
+	if (numBatch == 1)
+		return;
 
 	// keep 25% of the blocks in the thread cache, return 3/4 per term
 	size_t numKeep = std::max(numBatch / 4, size_t(1));
 	size_t numReturn = numBatch - numKeep;
 	for (size_t i = 1; i < numKeep && ptr; i++)
-		ptr = *reinterpret_cast<void**>(ptr);
+		ptr = *reinterpret_cast<void **>(ptr);
 
-	freeListSize_[index] = numKeep;
-	void* nodeReturn = *reinterpret_cast<void**>(ptr);
-	*reinterpret_cast<void**>(ptr) = nullptr;
-	CentralCache::getInstance().deallocateBatch(nodeReturn, numReturn, index);
-
+	freeListEntries_[index].tail = ptr;
+	freeListEntries_[index].size = numKeep;
+	void *nodeReturn = *reinterpret_cast<void **>(ptr);
+	*reinterpret_cast<void **>(ptr) = nullptr;
+	CentralCache::getInstance().deallocateBatch(nodeReturn, tail, numReturn, index);
 };
 
-bool ThreadCache::shouldReturn(size_t index) {
+bool ThreadCache::shouldReturn(size_t index)
+{
 	size_t blockSize = (index + 1) * Size::ALIGNMENT;
 	size_t threshold = (64 * 1024) / blockSize;
 	threshold = std::max(threshold, size_t(16));
-	return freeListSize_[index] > threshold;
+	return freeListEntries_[index].size > threshold;
 }

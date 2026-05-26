@@ -1,51 +1,58 @@
 #pragma once
-#include<atomic>
-#include<array>
-#include<map>
-#include<mutex>
+#include <atomic>
+#include <array>
+#include <map>
+#include <unordered_map>
+#include <mutex>
 
 class PageCache
 {
 public:
-	static PageCache& getInstance() {
+	static PageCache &getInstance()
+	{
 		static PageCache instance;
 		return instance;
 	}
-	void* allocateSpan(size_t numPages);
-	void deallocateSpan(void* spanAddr, size_t numPages);
+	void *allocateSpan(size_t numPages);
+	void deallocateSpan(void *spanAddr, size_t numPages);
+
 private:
 	PageCache() = default;
 	struct Span
 	{
-		void* addr;
+		void *addr;
 		size_t numPages;
-		Span* next;
+		Span *next;
 	};
-	void* systemAlloc(size_t numPages);
-	std::map<size_t, Span*> freeSpans_;
-	std::map<void*, Span*> spanMap_;
-	std::map<void*, Span*> endMap_;
-	bool removeFromFreeList(Span* target);
+	void *systemAlloc(size_t numPages);
+	std::map<size_t, Span *> freeSpans_;
+	std::unordered_map<void *, Span *> spanMap_;
+	std::unordered_map<void *, Span *> endMap_;
+	bool removeFromFreeList(Span *target);
 	std::mutex mutexLock;
 
 	static constexpr size_t MAX_SPANS = 4096;
 	Span spanPool_[MAX_SPANS];
-	Span* spanFreeList_ = nullptr;
+	Span *spanFreeList_ = nullptr;
 	size_t spanPoolUsed_ = 0;
 
-	Span* allocSpanMeta() {
-		if (spanFreeList_) {
-			Span* s = spanFreeList_;
+	Span *allocSpanMeta()
+	{
+		if (spanFreeList_)
+		{
+			Span *s = spanFreeList_;
 			spanFreeList_ = s->next;
 			return s;
 		}
-		if (spanPoolUsed_ < MAX_SPANS) {
+		if (spanPoolUsed_ < MAX_SPANS)
+		{
 			return &spanPool_[spanPoolUsed_++];
 		}
-		return new Span;  // fallback, should rarely happen
+		return new Span; // fallback, should rarely happen
 	}
 
-	void freeSpanMeta(Span* s) {
+	void freeSpanMeta(Span *s)
+	{
 		s->next = spanFreeList_;
 		spanFreeList_ = s;
 	}
